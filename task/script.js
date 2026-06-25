@@ -1,162 +1,51 @@
-const API = "https://script.google.com/macros/s/AKfycbyRlfGsTJaMP49u5g_pVAZEzSaFHOxdtcfqRfspMihQ_cqW782mmXPerALCDPTwGul3Bw/exec";
+const API="https://script.google.com/macros/s/AKfycbyRlfGsTJaMP49u5g_pVAZEzSaFHOxdtcfqRfspMihQ_cqW782mmXPerALCDPTwGul3Bw/exec";
 
-const category=document.getElementById("category");
-const system=document.getElementById("system");
-const type=document.getElementById("type");
-const priority=document.getElementById("priority");
-const locationBox=document.getElementById("location");
-const description=document.getElementById("description");
+let complaints=[];
+let filtered=[];
 
-const submitBtn=document.getElementById("submitComplaint");
-const refreshBtn=document.getElementById("refresh");
-const taskContainer=document.getElementById("taskContainer");
+const cards=document.getElementById("cards");
+const search=document.getElementById("search");
 
-window.onload=()=>{
+load();
 
-    loadCategories();
-    loadTasks();
+async function load(){
 
-};
+    const res=await fetch(API+"?action=complaints");
 
-async function loadCategories(){
+    complaints=await res.json();
 
-    const res=await fetch(API+"?action=categories");
-    const data=await res.json();
+    complaints.reverse();
 
-    category.innerHTML="<option value=''>Select Category</option>";
+    filtered=complaints;
 
-    data.forEach(c=>{
-
-        category.innerHTML+=`<option>${c}</option>`;
-
-    });
+    render();
 
 }
 
-category.onchange=async()=>{
+function render(){
 
-    system.innerHTML="<option>Select System</option>";
-    type.innerHTML="<option>Select Type</option>";
-    priority.value="";
+    cards.innerHTML="";
 
-    if(category.value=="") return;
+    let pending=0;
+    let progress=0;
+    let completed=0;
 
-    const res=await fetch(API+"?action=systems&category="+encodeURIComponent(category.value));
+    filtered.forEach(c=>{
 
-    const data=await res.json();
+        if(c.status=="Pending") pending++;
+        if(c.status=="In Progress") progress++;
+        if(c.status=="Completed") completed++;
 
-    data.forEach(s=>{
+        let cls="pending";
 
-        system.innerHTML+=`<option>${s}</option>`;
+        if(c.status=="In Progress") cls="progress";
+        if(c.status=="Completed") cls="completed";
 
-    });
+        cards.innerHTML+=`
 
-}
+<div class="card">
 
-system.onchange=async()=>{
-
-    type.innerHTML="<option>Select Type</option>";
-    priority.value="";
-
-    if(system.value=="") return;
-
-    const res=await fetch(API+"?action=types&system="+encodeURIComponent(system.value));
-
-    const data=await res.json();
-
-    data.forEach(t=>{
-
-        type.innerHTML+=`<option data-priority="${t.priority}">${t.type}</option>`;
-
-    });
-
-}
-
-type.onchange=()=>{
-
-    priority.value=
-    type.options[type.selectedIndex].dataset.priority||"";
-
-}
-
-submitBtn.onclick=async()=>{
-
-    if(category.value=="") return alert("Select Category");
-    if(system.value=="") return alert("Select System");
-    if(type.value=="") return alert("Select Type");
-    if(locationBox.value=="") return alert("Enter Location");
-    if(description.value=="") return alert("Enter Description");
-
-    submitBtn.disabled=true;
-
-    const url=API+
-
-    "?action=addComplaint"+
-
-    "&category="+encodeURIComponent(category.value)+
-
-    "&system="+encodeURIComponent(system.value)+
-
-    "&type="+encodeURIComponent(type.value)+
-
-    "&priority="+encodeURIComponent(priority.value)+
-
-    "&location="+encodeURIComponent(locationBox.value)+
-
-    "&description="+encodeURIComponent(description.value);
-
-    const res=await fetch(url);
-
-    const result=await res.json();
-
-    submitBtn.disabled=false;
-
-    if(result.success){
-
-        alert("Complaint Registered : "+result.id);
-
-        category.selectedIndex=0;
-        system.innerHTML="<option>Select System</option>";
-        type.innerHTML="<option>Select Type</option>";
-
-        priority.value="";
-        locationBox.value="";
-        description.value="";
-
-        loadTasks();
-
-    }else{
-
-        alert(result.error||"Unable to submit.");
-
-    }
-
-}
-
-async function loadTasks(){
-
-    const res=await fetch(API+"?action=tasks");
-
-    const tasks=await res.json();
-
-    taskContainer.innerHTML="";
-
-    if(tasks.length==0){
-
-        taskContainer.innerHTML="<h3>No Pending Tasks</h3>";
-        return;
-
-    }
-
-    tasks.reverse();
-
-    tasks.forEach(c=>{
-
-        taskContainer.innerHTML+=`
-
-<div class="task-card">
-
-<h3>${c.id}</h3>
+<h2>${c.id}</h2>
 
 <p><b>Category:</b> ${c.category}</p>
 
@@ -170,7 +59,35 @@ async function loadTasks(){
 
 <p>${c.description}</p>
 
-<span class="status pending">${c.status}</span>
+<p><b>Assigned:</b> ${c.assigned||"-"}</p>
+
+<span class="badge ${cls}">${c.status}</span>
+
+<div class="assign">
+
+<input id="assign-${c.id}" placeholder="Assign To">
+
+<select id="status-${c.id}">
+
+<option ${c.status=="Pending"?"selected":""}>Pending</option>
+
+<option ${c.status=="In Progress"?"selected":""}>In Progress</option>
+
+<option ${c.status=="Completed"?"selected":""}>Completed</option>
+
+</select>
+
+</div>
+
+<div class="buttons">
+
+<button onclick="assign('${c.id}')" class="assignBtn">Assign</button>
+
+<button onclick="updateStatus('${c.id}')" class="statusBtn">Update</button>
+
+<button onclick="completeTask('${c.id}')" class="completeBtn">Complete</button>
+
+</div>
 
 </div>
 
@@ -178,6 +95,71 @@ async function loadTasks(){
 
     });
 
+    document.getElementById("total").innerText=filtered.length;
+    document.getElementById("pending").innerText=pending;
+    document.getElementById("progress").innerText=progress;
+    document.getElementById("completed").innerText=completed;
+
 }
 
-refreshBtn.onclick=loadTasks;
+search.onkeyup=()=>{
+
+    const k=search.value.toLowerCase();
+
+    filtered=complaints.filter(c=>
+
+        c.id.toLowerCase().includes(k)||
+        c.category.toLowerCase().includes(k)||
+        c.system.toLowerCase().includes(k)||
+        c.type.toLowerCase().includes(k)||
+        c.location.toLowerCase().includes(k)
+
+    );
+
+    render();
+
+}
+
+async function assign(id){
+
+    const person=document.getElementById("assign-"+id).value;
+
+    if(person=="") return alert("Enter Name");
+
+    await fetch(API+
+
+    "?action=assignTask&id="+id+
+
+    "&assigned="+encodeURIComponent(person));
+
+    load();
+
+}
+
+async function updateStatus(id){
+
+    const status=document.getElementById("status-"+id).value;
+
+    await fetch(API+
+
+    "?action=updateStatus&id="+id+
+
+    "&status="+encodeURIComponent(status));
+
+    load();
+
+}
+
+async function completeTask(id){
+
+    await fetch(API+
+
+    "?action=completeTask&id="+id);
+
+    load();
+
+}
+
+document.getElementById("refresh").onclick=load;
+
+setInterval(load,30000);
