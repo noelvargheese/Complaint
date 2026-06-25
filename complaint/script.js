@@ -1,215 +1,123 @@
-const API =
-"https://script.google.com/macros/s/AKfycbwnN1FTyHnW81loHDekGoMEbNbucJbuHXxEiy7iQVj7iyyW4sNXR-_4i0vOQ3kzPQNLxg/exec";
+const API = "https://script.google.com/macros/s/AKfycbyRlfGsTJaMP49u5g_pVAZEzSaFHOxdtcfqRfspMihQ_cqW782mmXPerALCDPTwGul3Bw/exec";
 
-const category = document.getElementById("category");
-const system = document.getElementById("system");
-const type = document.getElementById("type");
-const priority = document.getElementById("priority");
-const locationBox = document.getElementById("location");
-const description = document.getElementById("description");
+const category=document.getElementById("category");
+const system=document.getElementById("system");
+const type=document.getElementById("type");
+const priority=document.getElementById("priority");
+const locationBox=document.getElementById("location");
+const description=document.getElementById("description");
 
-const submitBtn = document.getElementById("submitComplaint");
-const refreshBtn = document.getElementById("refresh");
+const submitBtn=document.getElementById("submitComplaint");
+const refreshBtn=document.getElementById("refresh");
+const taskContainer=document.getElementById("taskContainer");
 
-const taskContainer = document.getElementById("taskContainer");
-
-window.onload = () => {
+window.onload=()=>{
 
     loadCategories();
     loadTasks();
 
 };
 
-/************************************************
-LOAD CATEGORIES
-************************************************/
-
 async function loadCategories(){
 
-    const res = await fetch(API+"?action=categories");
-    const data = await res.json();
+    const res=await fetch(API+"?action=categories");
+    const data=await res.json();
 
-    category.innerHTML="<option value=''>Select</option>";
+    category.innerHTML="<option value=''>Select Category</option>";
 
     data.forEach(c=>{
 
-        category.innerHTML += `
-        <option value="${c}">
-            ${c}
-        </option>`;
+        category.innerHTML+=`<option>${c}</option>`;
 
     });
 
 }
 
-/************************************************
-CATEGORY CHANGE
-************************************************/
+category.onchange=async()=>{
 
-category.onchange = async ()=>{
-
-    system.innerHTML="<option>Select</option>";
-    type.innerHTML="<option>Select</option>";
+    system.innerHTML="<option>Select System</option>";
+    type.innerHTML="<option>Select Type</option>";
     priority.value="";
 
     if(category.value=="") return;
 
-    const res = await fetch(
+    const res=await fetch(API+"?action=systems&category="+encodeURIComponent(category.value));
 
-        API+
-        "?action=systems&category="+
-        encodeURIComponent(category.value)
-
-    );
-
-    const data = await res.json();
+    const data=await res.json();
 
     data.forEach(s=>{
 
-        system.innerHTML += `
-        <option value="${s}">
-            ${s}
-        </option>`;
+        system.innerHTML+=`<option>${s}</option>`;
 
     });
 
-};
+}
 
-/************************************************
-SYSTEM CHANGE
-************************************************/
+system.onchange=async()=>{
 
-system.onchange = async ()=>{
-
-    type.innerHTML="<option>Select</option>";
+    type.innerHTML="<option>Select Type</option>";
     priority.value="";
 
     if(system.value=="") return;
 
-    const res = await fetch(
+    const res=await fetch(API+"?action=types&system="+encodeURIComponent(system.value));
 
-        API+
-        "?action=types&system="+
-        encodeURIComponent(system.value)
-
-    );
-
-    const data = await res.json();
+    const data=await res.json();
 
     data.forEach(t=>{
 
-        type.innerHTML += `
-        <option
-        value="${t.type}"
-        data-priority="${t.priority}">
-
-        ${t.type}
-
-        </option>`;
+        type.innerHTML+=`<option data-priority="${t.priority}">${t.type}</option>`;
 
     });
 
-};
-
-/************************************************
-TYPE CHANGE
-************************************************/
+}
 
 type.onchange=()=>{
 
-    const selected =
-    type.options[type.selectedIndex];
+    priority.value=
+    type.options[type.selectedIndex].dataset.priority||"";
 
-    priority.value =
-    selected.dataset.priority || "";
+}
 
-};
+submitBtn.onclick=async()=>{
 
-/************************************************
-SUBMIT
-************************************************/
-
-submitBtn.onclick = async ()=>{
-
-    if(category.value==""){
-
-        alert("Select Category");
-        return;
-
-    }
-
-    if(system.value==""){
-
-        alert("Select System");
-        return;
-
-    }
-
-    if(type.value==""){
-
-        alert("Select Type");
-        return;
-
-    }
-
-    if(locationBox.value.trim()==""){
-
-        alert("Enter Location");
-        return;
-
-    }
-
-    if(description.value.trim()==""){
-
-        alert("Enter Description");
-        return;
-
-    }
+    if(category.value=="") return alert("Select Category");
+    if(system.value=="") return alert("Select System");
+    if(type.value=="") return alert("Select Type");
+    if(locationBox.value=="") return alert("Enter Location");
+    if(description.value=="") return alert("Enter Description");
 
     submitBtn.disabled=true;
-    submitBtn.innerText="Submitting...";
 
-    const body={
+    const url=API+
 
-        action:"addComplaint",
+    "?action=addComplaint"+
 
-        category:category.value,
-        system:system.value,
-        type:type.value,
-        priority:priority.value,
+    "&category="+encodeURIComponent(category.value)+
 
-        location:locationBox.value,
-        description:description.value
+    "&system="+encodeURIComponent(system.value)+
 
-    };
+    "&type="+encodeURIComponent(type.value)+
 
-    const res = await fetch(API,{
+    "&priority="+encodeURIComponent(priority.value)+
 
-        method:"POST",
+    "&location="+encodeURIComponent(locationBox.value)+
 
-        headers:{
-            "Content-Type":"application/json"
-        },
+    "&description="+encodeURIComponent(description.value);
 
-        body:JSON.stringify(body)
-
-    });
+    const res=await fetch(url);
 
     const result=await res.json();
 
     submitBtn.disabled=false;
-    submitBtn.innerText="Submit Complaint";
 
     if(result.success){
 
-        alert(
-        "Complaint Registered\n"+
-        result.id
-        );
+        alert("Complaint Registered : "+result.id);
 
         category.selectedIndex=0;
-        system.innerHTML="<option>Select</option>";
-        type.innerHTML="<option>Select</option>";
+        system.innerHTML="<option>Select System</option>";
+        type.innerHTML="<option>Select Type</option>";
 
         priority.value="";
         locationBox.value="";
@@ -217,38 +125,25 @@ submitBtn.onclick = async ()=>{
 
         loadTasks();
 
+    }else{
+
+        alert(result.error||"Unable to submit.");
+
     }
-    else{
 
-        alert("Unable to submit.");
-
-    }
-
-};
-
-/************************************************
-LOAD TASKS
-************************************************/
+}
 
 async function loadTasks(){
 
-    const res =
-    await fetch(API+"?action=tasks");
+    const res=await fetch(API+"?action=tasks");
 
-    const tasks =
-    await res.json();
+    const tasks=await res.json();
 
     taskContainer.innerHTML="";
 
-    if(tasks.length===0){
+    if(tasks.length==0){
 
-        taskContainer.innerHTML=`
-        <div class="task-card">
-
-        <h3>No Pending Complaints</h3>
-
-        </div>`;
-
+        taskContainer.innerHTML="<h3>No Pending Tasks</h3>";
         return;
 
     }
@@ -257,34 +152,25 @@ async function loadTasks(){
 
     tasks.forEach(c=>{
 
-        taskContainer.innerHTML += `
+        taskContainer.innerHTML+=`
 
 <div class="task-card">
 
 <h3>${c.id}</h3>
 
-<p><span>Category :</span> ${c.category}</p>
+<p><b>Category:</b> ${c.category}</p>
 
-<p><span>System :</span> ${c.system}</p>
+<p><b>System:</b> ${c.system}</p>
 
-<p><span>Type :</span> ${c.type}</p>
+<p><b>Type:</b> ${c.type}</p>
 
-<p><span>Priority :</span> ${c.priority}</p>
+<p><b>Priority:</b> ${c.priority}</p>
 
-<p><span>Location :</span> ${c.location}</p>
+<p><b>Location:</b> ${c.location}</p>
 
-<p><span>Description :</span><br>
-${c.description}</p>
+<p>${c.description}</p>
 
-<p><span>Date :</span> ${c.date}</p>
-
-<p><span>Time :</span> ${c.time}</p>
-
-<span class="status pending">
-
-${c.status}
-
-</span>
+<span class="status pending">${c.status}</span>
 
 </div>
 
@@ -294,12 +180,4 @@ ${c.status}
 
 }
 
-/************************************************
-REFRESH
-************************************************/
-
-refreshBtn.onclick=()=>{
-
-    loadTasks();
-
-};
+refreshBtn.onclick=loadTasks;
