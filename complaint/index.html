@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Complaint Portal</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<header>
+
+    <div class="header-left">
+        <h1>Complaint Management Portal</h1>
+        <p>Complaint Registration</p>
+    </div>
+
+</header>
+
+<div class="container">
+
+    <!-- ========================= -->
+    <!-- SECTION 1 -->
+    <!-- ========================= -->
+
+    <section class="form-section">
+
+        <h2>Register Complaint</h2>
+
+        <div class="horizontal-form">
+
+            <div class="field">
+
+                <label>Category</label>
+
+                <select id="category">
+                    <option value="">Select</option>
+                </select>
+
+            </div>
+
+            <div class="field">
+
+                <label>System</label>
+
+                <select id="system">
+                    <option value="">Select</option>
+                </select>
+
+            </div>
+
+            <div class="field">
+
+                <label>Type</label>
+
+                <select id="type">
+                    <option value="">Select</option>
+                </select>
+
+            </div>
+
+            <div class="field">
+
+                <label>Priority</label>
+
+                <input
+                    type="text"
+                    id="priority"
+                    readonly>
+
+            </div>
+
+            <div class="field">
+
+                <label>Location</label>
+
+                <input
+                    type="text"
+                    id="location">
+
+            </div>
+
+            <div class="field description">
+
+                <label>Description</label>
+
+                <textarea
+                    id="description"></textarea>
+
+            </div>
+
+            <div class="submit-box">
+
+                <button
+                    id="submitComplaint">
+
+                    Submit Complaint
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ========================= -->
+    <!-- SECTION 2 -->
+    <!-- ========================= -->
+
+    <section class="tasks-section">
+
+        <div class="title-row">
+
+            <h2>
+
+                Pending / Uncompleted Tasks
+
+            </h2>
+
+            <button
+                id="refresh">
+
+                Refresh
+
+            </button>
+
+        </div>
+
+        <div
+            id="taskContainer"
+            class="task-grid">
+
+        </div>
+
+    </section>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Task Management Portal</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<header>
+
+    <div class="header">
+
+        <h1>Task Management Portal</h1>
+
+        <p>Complaint Tracking Dashboard</p>
+
+    </div>
+
+</header>
+
+<div class="container">
+
+    <!-- SEARCH -->
+
+    <section class="search-section">
+
+        <input
+            type="text"
+            id="search"
+            placeholder="Search Complaint ID, Category, System, Type, Location...">
+
+        <button id="refresh">
+
+            Refresh
+
+        </button>
+
+    </section>
+
+    <!-- COUNTERS -->
+
+    <section class="summary">
+
+        <div class="box">
+
+            <h2 id="total">0</h2>
+
+            <p>Total</p>
+
+        </div>
+
+        <div class="box">
+
+            <h2 id="pending">0</h2>
+
+            <p>Pending</p>
+
+        </div>
+
+        <div class="box">
+
+            <h2 id="progress">0</h2>
+
+            <p>In Progress</p>
+
+        </div>
+
+        <div class="box">
+
+            <h2 id="completed">0</h2>
+
+            <p>Completed</p>
+
+        </div>
+
+    </section>
+
+    <!-- TASKS -->
+
+    <section>
+
+        <div
+            id="cards"
+            class="card-grid">
+
+        </div>
+
+    </section>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

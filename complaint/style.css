@@ -1,0 +1,404 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+
+    --primary:#0b4d94;
+    --primaryDark:#083b71;
+    --background:#eef3fa;
+    --card:#ffffff;
+    --border:#d9e2ec;
+    --text:#1f2937;
+    --success:#16a34a;
+    --warning:#eab308;
+    --danger:#dc2626;
+
+}
+
+body{
+
+    font-family:"Segoe UI",sans-serif;
+    background:var(--background);
+    color:var(--text);
+
+}
+
+/************************
+HEADER
+************************/
+
+header{
+
+    background:var(--primary);
+    color:white;
+    padding:20px 40px;
+    box-shadow:0 3px 8px rgba(0,0,0,.15);
+
+}
+
+header h1{
+
+    font-size:28px;
+    margin-bottom:5px;
+
+}
+
+header p{
+
+    opacity:.9;
+
+}
+
+/************************
+CONTAINER
+************************/
+
+.container{
+
+    width:95%;
+    max-width:1700px;
+    margin:auto;
+    padding:25px;
+
+}
+
+/************************
+FORM
+************************/
+
+.form-section{
+
+    background:white;
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:30px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+
+}
+
+.form-section h2{
+
+    margin-bottom:20px;
+    color:var(--primary);
+
+}
+
+.horizontal-form{
+
+    display:grid;
+
+    grid-template-columns:
+
+    repeat(6,1fr)
+    180px;
+
+    gap:18px;
+    align-items:end;
+
+}
+
+.field{
+
+    display:flex;
+    flex-direction:column;
+
+}
+
+.field label{
+
+    font-size:14px;
+    margin-bottom:8px;
+    font-weight:600;
+
+}
+
+.field input,
+.field select,
+.field textarea{
+
+    padding:10px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-size:15px;
+
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus{
+
+    outline:none;
+    border-color:var(--primary);
+
+}
+
+.description{
+
+    grid-column:span 2;
+
+}
+
+.description textarea{
+
+    resize:none;
+    height:45px;
+
+}
+
+.submit-box{
+
+    display:flex;
+    align-items:flex-end;
+
+}
+
+.submit-box button{
+
+    width:100%;
+    height:45px;
+
+    background:var(--primary);
+    color:white;
+
+    border:none;
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-size:15px;
+    font-weight:600;
+
+    transition:.25s;
+
+}
+
+.submit-box button:hover{
+
+    background:var(--primaryDark);
+
+}
+
+/************************
+SECTION TITLE
+************************/
+
+.title-row{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-bottom:20px;
+
+}
+
+.title-row h2{
+
+    color:var(--primary);
+
+}
+
+.title-row button{
+
+    background:var(--primary);
+
+    color:white;
+
+    border:none;
+
+    padding:10px 18px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+}
+
+/************************
+TASK GRID
+************************/
+
+.task-grid{
+
+    display:grid;
+
+    grid-template-columns:
+
+    repeat(auto-fill,minmax(320px,1fr));
+
+    gap:20px;
+
+}
+
+/************************
+CARD
+************************/
+
+.task-card{
+
+    background:white;
+
+    border-radius:12px;
+
+    padding:18px;
+
+    border-left:6px solid var(--primary);
+
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+
+    transition:.25s;
+
+}
+
+.task-card:hover{
+
+    transform:translateY(-4px);
+
+}
+
+.task-card h3{
+
+    color:var(--primary);
+    margin-bottom:10px;
+
+}
+
+.task-card p{
+
+    margin:6px 0;
+    font-size:14px;
+
+}
+
+.task-card span{
+
+    font-weight:600;
+
+}
+
+/************************
+STATUS
+************************/
+
+.status{
+
+    display:inline-block;
+
+    margin-top:10px;
+
+    padding:6px 12px;
+
+    border-radius:20px;
+
+    color:white;
+
+    font-size:13px;
+
+}
+
+.pending{
+
+    background:var(--warning);
+
+}
+
+.progress{
+
+    background:#2563eb;
+
+}
+
+.complete{
+
+    background:var(--success);
+
+}
+
+/************************
+CARD BUTTONS
+************************/
+
+.card-buttons{
+
+    margin-top:15px;
+
+    display:flex;
+
+    gap:10px;
+
+}
+
+.card-buttons button{
+
+    flex:1;
+
+    border:none;
+
+    padding:10px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    color:white;
+
+}
+
+.viewBtn{
+
+    background:#2563eb;
+
+}
+
+.completeBtn{
+
+    background:var(--success);
+
+}
+
+/************************
+RESPONSIVE
+************************/
+
+@media(max-width:1500px){
+
+.horizontal-form{
+
+grid-template-columns:
+
+repeat(3,1fr);
+
+}
+
+.description{
+
+grid-column:span 3;
+
+}
+
+}
+
+@media(max-width:900px){
+
+.horizontal-form{
+
+grid-template-columns:1fr;
+
+}
+
+.description{
+
+grid-column:span 1;
+
+}
+
+.submit-box{
+
+width:100%;
+
+}
+
+}
