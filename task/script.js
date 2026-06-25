@@ -1,143 +1,176 @@
-const API =
-"https://script.google.com/macros/s/AKfycbwnN1FTyHnW81loHDekGoMEbNbucJbuHXxEiy7iQVj7iyyW4sNXR-_4i0vOQ3kzPQNLxg/exec";
+const API = "https://script.google.com/macros/s/AKfycbyRlfGsTJaMP49u5g_pVAZEzSaFHOxdtcfqRfspMihQ_cqW782mmXPerALCDPTwGul3Bw/exec";
 
-const cards = document.getElementById("cards");
-const search = document.getElementById("search");
+const category=document.getElementById("category");
+const system=document.getElementById("system");
+const type=document.getElementById("type");
+const priority=document.getElementById("priority");
+const locationBox=document.getElementById("location");
+const description=document.getElementById("description");
 
-const totalBox = document.getElementById("total");
-const pendingBox = document.getElementById("pending");
-const progressBox = document.getElementById("progress");
-const completedBox = document.getElementById("completed");
+const submitBtn=document.getElementById("submitComplaint");
+const refreshBtn=document.getElementById("refresh");
+const taskContainer=document.getElementById("taskContainer");
 
-let complaints = [];
-let filtered = [];
+window.onload=()=>{
 
-load();
+    loadCategories();
+    loadTasks();
 
-/*************************************************
-LOAD
-*************************************************/
+};
 
-async function load(){
+async function loadCategories(){
 
-    const res = await fetch(API + "?action=complaints");
-    complaints = await res.json();
+    const res=await fetch(API+"?action=categories");
+    const data=await res.json();
 
-    complaints.reverse();
+    category.innerHTML="<option value=''>Select Category</option>";
 
-    filtered = complaints;
+    data.forEach(c=>{
 
-    render();
+        category.innerHTML+=`<option>${c}</option>`;
+
+    });
 
 }
 
-/*************************************************
-RENDER
-*************************************************/
+category.onchange=async()=>{
 
-function render(){
+    system.innerHTML="<option>Select System</option>";
+    type.innerHTML="<option>Select Type</option>";
+    priority.value="";
 
-    cards.innerHTML="";
+    if(category.value=="") return;
 
-    let total=0;
-    let pending=0;
-    let progress=0;
-    let completed=0;
+    const res=await fetch(API+"?action=systems&category="+encodeURIComponent(category.value));
 
-    filtered.forEach(c=>{
+    const data=await res.json();
 
-        total++;
+    data.forEach(s=>{
 
-        if(c.status=="Pending") pending++;
-        else if(c.status=="In Progress") progress++;
-        else if(c.status=="Completed") completed++;
+        system.innerHTML+=`<option>${s}</option>`;
 
-        let badge="pending";
+    });
 
-        if(c.status=="In Progress")
-            badge="progress";
+}
 
-        if(c.status=="Completed")
-            badge="completed";
+system.onchange=async()=>{
 
-        cards.innerHTML += `
+    type.innerHTML="<option>Select Type</option>";
+    priority.value="";
 
-<div class="card">
+    if(system.value=="") return;
 
-<h2>${c.id}</h2>
+    const res=await fetch(API+"?action=types&system="+encodeURIComponent(system.value));
 
-<p><strong>Category :</strong> ${c.category}</p>
+    const data=await res.json();
 
-<p><strong>System :</strong> ${c.system}</p>
+    data.forEach(t=>{
 
-<p><strong>Type :</strong> ${c.type}</p>
+        type.innerHTML+=`<option data-priority="${t.priority}">${t.type}</option>`;
 
-<p><strong>Priority :</strong> ${c.priority}</p>
+    });
 
-<p><strong>Location :</strong> ${c.location}</p>
+}
 
-<p><strong>Description :</strong><br>${c.description}</p>
+type.onchange=()=>{
 
-<p><strong>Assigned :</strong> ${c.assigned || "-"}</p>
+    priority.value=
+    type.options[type.selectedIndex].dataset.priority||"";
 
-<p><strong>Date :</strong> ${c.date}</p>
+}
 
-<p><strong>Time :</strong> ${c.time}</p>
+submitBtn.onclick=async()=>{
 
-<span class="badge ${badge}">
-${c.status}
-</span>
+    if(category.value=="") return alert("Select Category");
+    if(system.value=="") return alert("Select System");
+    if(type.value=="") return alert("Select Type");
+    if(locationBox.value=="") return alert("Enter Location");
+    if(description.value=="") return alert("Enter Description");
 
-<div class="assign">
+    submitBtn.disabled=true;
 
-<input
-type="text"
-id="assign-${c.id}"
-placeholder="Assign To">
+    const url=API+
 
-<select id="status-${c.id}">
+    "?action=addComplaint"+
 
-<option>Pending</option>
+    "&category="+encodeURIComponent(category.value)+
 
-<option ${c.status=="In Progress"?"selected":""}>
-In Progress
-</option>
+    "&system="+encodeURIComponent(system.value)+
 
-<option ${c.status=="Completed"?"selected":""}>
-Completed
-</option>
+    "&type="+encodeURIComponent(type.value)+
 
-</select>
+    "&priority="+encodeURIComponent(priority.value)+
 
-</div>
+    "&location="+encodeURIComponent(locationBox.value)+
 
-<div class="buttons">
+    "&description="+encodeURIComponent(description.value);
 
-<button
-class="assignBtn"
-onclick="assign('${c.id}')">
+    const res=await fetch(url);
 
-Assign
+    const result=await res.json();
 
-</button>
+    submitBtn.disabled=false;
 
-<button
-class="statusBtn"
-onclick="statusUpdate('${c.id}')">
+    if(result.success){
 
-Update
+        alert("Complaint Registered : "+result.id);
 
-</button>
+        category.selectedIndex=0;
+        system.innerHTML="<option>Select System</option>";
+        type.innerHTML="<option>Select Type</option>";
 
-<button
-class="completeBtn"
-onclick="complete('${c.id}')">
+        priority.value="";
+        locationBox.value="";
+        description.value="";
 
-Complete
+        loadTasks();
 
-</button>
+    }else{
 
-</div>
+        alert(result.error||"Unable to submit.");
+
+    }
+
+}
+
+async function loadTasks(){
+
+    const res=await fetch(API+"?action=tasks");
+
+    const tasks=await res.json();
+
+    taskContainer.innerHTML="";
+
+    if(tasks.length==0){
+
+        taskContainer.innerHTML="<h3>No Pending Tasks</h3>";
+        return;
+
+    }
+
+    tasks.reverse();
+
+    tasks.forEach(c=>{
+
+        taskContainer.innerHTML+=`
+
+<div class="task-card">
+
+<h3>${c.id}</h3>
+
+<p><b>Category:</b> ${c.category}</p>
+
+<p><b>System:</b> ${c.system}</p>
+
+<p><b>Type:</b> ${c.type}</p>
+
+<p><b>Priority:</b> ${c.priority}</p>
+
+<p><b>Location:</b> ${c.location}</p>
+
+<p>${c.description}</p>
+
+<span class="status pending">${c.status}</span>
 
 </div>
 
@@ -145,159 +178,6 @@ Complete
 
     });
 
-    totalBox.innerText=total;
-    pendingBox.innerText=pending;
-    progressBox.innerText=progress;
-    completedBox.innerText=completed;
-
 }
 
-/*************************************************
-SEARCH
-*************************************************/
-
-search.onkeyup=()=>{
-
-    const key=search.value.toLowerCase();
-
-    filtered=complaints.filter(c=>
-
-        c.id.toLowerCase().includes(key)||
-
-        c.category.toLowerCase().includes(key)||
-
-        c.system.toLowerCase().includes(key)||
-
-        c.type.toLowerCase().includes(key)||
-
-        c.location.toLowerCase().includes(key)||
-
-        c.priority.toLowerCase().includes(key)||
-
-        c.status.toLowerCase().includes(key)
-
-    );
-
-    render();
-
-};
-
-/*************************************************
-ASSIGN
-*************************************************/
-
-async function assign(id){
-
-    const person=document
-    .getElementById("assign-"+id)
-    .value;
-
-    if(person==""){
-
-        alert("Enter Assigned Person");
-        return;
-
-    }
-
-    await fetch(API,{
-
-        method:"POST",
-
-        headers:{
-            "Content-Type":"application/json"
-        },
-
-        body:JSON.stringify({
-
-            action:"assignTask",
-
-            id:id,
-
-            assigned:person
-
-        })
-
-    });
-
-    load();
-
-}
-
-/*************************************************
-STATUS UPDATE
-*************************************************/
-
-async function statusUpdate(id){
-
-    const status=document
-    .getElementById("status-"+id)
-    .value;
-
-    await fetch(API,{
-
-        method:"POST",
-
-        headers:{
-            "Content-Type":"application/json"
-        },
-
-        body:JSON.stringify({
-
-            action:"updateStatus",
-
-            id:id,
-
-            status:status
-
-        })
-
-    });
-
-    load();
-
-}
-
-/*************************************************
-COMPLETE
-*************************************************/
-
-async function complete(id){
-
-    if(!confirm("Complete this complaint?"))
-        return;
-
-    await fetch(API,{
-
-        method:"POST",
-
-        headers:{
-            "Content-Type":"application/json"
-        },
-
-        body:JSON.stringify({
-
-            action:"completeTask",
-
-            id:id
-
-        })
-
-    });
-
-    load();
-
-}
-
-/*************************************************
-REFRESH
-*************************************************/
-
-document
-.getElementById("refresh")
-.onclick=load;
-
-/*************************************************
-AUTO REFRESH EVERY 30 SECONDS
-*************************************************/
-
-setInterval(load,30000);
+refreshBtn.onclick=loadTasks;
